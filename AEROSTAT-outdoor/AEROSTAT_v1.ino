@@ -29,8 +29,8 @@ unsigned long lastLogTime = 0;
 const unsigned long logInterval = 60000; // 1 minute in milliseconds
 
 // WiFi settings
-const char* ssid     = "ESP32";
-const char* password = "admin123";
+const char* ssid     = "xyz";
+const char* password = "xyz";
 
 // NTP server and time settings
 const char* ntpServer = "pool.ntp.org"; // NTP server address
@@ -121,7 +121,7 @@ void logData() {
   }
   generateFilename(timeinfo);
 
-  float DTH_hum = dht.readHumidity();     // %
+  int DTH_hum = dht.readHumidity();     // %
   float DTH_temp = dht.readTemperature(); // default °C
 
   temp.requestTemperatures();
@@ -176,7 +176,7 @@ void logData() {
   // Open file in append mode
   dataFile = SD.open(filename, FILE_APPEND);
   if (dataFile) {
-    dataFile.printf("%04d-%02d-%02d,%02d:%02d:%02d,%.2f,%.2f,%02d,%04d\n",
+    dataFile.printf("%04d-%02d-%02d;%02d:%02d:%02d;%.2f;%.2f;%2d;%d\n",
                     timeinfo.tm_year + 1900,
                     timeinfo.tm_mon + 1,
                     timeinfo.tm_mday,
