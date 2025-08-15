@@ -1,5 +1,5 @@
 //BASIC INFORMATION
-// Program: External weather station
+// Program: Outdoor weather station
 // Author:  Paweł Bartkiewicz 
 // email:   15g.pawel.bart@gmail.com
 // github:  PaweuQ
