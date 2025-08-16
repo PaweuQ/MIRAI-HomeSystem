@@ -24,13 +24,20 @@
 // CS - GPIO 5
 File dataFile;
 
+// SD module interupt
+#define RED 12
+#define YELLOW 14
+#define GREEN 27
+#define green_button 26
+#define red_button 21
+
 // ==== Logging interval ====
 unsigned long lastLogTime = 0;
 const unsigned long logInterval = 60000; // 1 minute in milliseconds
 
 // WiFi settings
-const char* ssid     = "xyz";
-const char* password = "xyz";
+const char* ssid     = "HUAWEI-B525-7D56";
+const char* password = "GFR6Q4A9N17";
 
 // NTP server and time settings
 const char* ntpServer = "pool.ntp.org"; // NTP server address
@@ -57,6 +64,12 @@ void generateFilename(struct tm timeinfo);
 void setup() {
 
   Serial.begin(115200);
+  pinMode(RED, OUTPUT);
+  pinMode(GREEN, OUTPUT);
+  pinMode(YELLOW, OUTPUT);
+  pinMode(green_button, INPUT_PULLUP);
+  pinMode(red_button, INPUT_PULLUP);
+
   
   temp.begin();
   dht.begin();
@@ -85,7 +98,7 @@ void setup() {
   if (!SD.exists("/data.csv")) {
     dataFile = SD.open("/data.csv", FILE_WRITE);
     if (dataFile) {
-      dataFile.println("Temperature");
+      dataFile.println("Date; Time; Temp DS18B20; Temp DTH; Hum DTH; Rain");
       dataFile.close();
     } else {
       Serial.println("Failed to create file!");
