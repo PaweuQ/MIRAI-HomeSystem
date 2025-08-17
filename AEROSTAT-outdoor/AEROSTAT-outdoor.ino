@@ -28,8 +28,12 @@ File dataFile;
 #define RED 12
 #define YELLOW 14
 #define GREEN 27
-#define green_button 26
-#define red_button 21
+#define BTN_REMOUNT 26 //yellow
+#define BTN_PAUSE 21  //red
+
+// === Logging state ===
+bool loggingPaused = false;      // true = logging stopped
+bool sdReady       = false;      // true = SD initialized and ready
 
 // ==== Logging interval ====
 unsigned long lastLogTime = 0;
@@ -67,8 +71,8 @@ void setup() {
   pinMode(RED, OUTPUT);
   pinMode(GREEN, OUTPUT);
   pinMode(YELLOW, OUTPUT);
-  pinMode(green_button, INPUT_PULLUP);
-  pinMode(red_button, INPUT_PULLUP);
+  pinMode(BTN_REMOUNT, INPUT_PULLUP);
+  pinMode(BTN_PAUSE, INPUT_PULLUP);
 
   
   temp.begin();
@@ -90,10 +94,14 @@ void setup() {
 
   SD.begin(SD_CS);
   if (!SD.begin(SD_CS)) {
+    sdReady = false;
     Serial.println("SD card initialization failed!");
-    while (1);
+  } else {
+    sdReady = true;
+    Serial.println("SD card initialized.");
   }
-  Serial.println("SD card initialized.");
+  updateLEDs();
+  
   // Create file if it doesn't exist
   if (!SD.exists("/data.csv")) {
     dataFile = SD.open("/data.csv", FILE_WRITE);
@@ -104,19 +112,52 @@ void setup() {
       Serial.println("Failed to create file!");
     }
   }
-
-  
 }
+
 
 void loop() {
 
+  if(digitalRead(BTN_PAUSE) == LOW){
+    delay(500); //debounce
+    loggingPaused = !loggingPaused; //toggle state
+    if (loggingPaused){
+      sdReady = false; 
+      if (dataFile) dataFile.close();
+      Serial.println("[SD] Logging paused. Card can be removed safely");
+    } else { 
+      sdReady = ensureSDWritable();
+      Serial.println("[SD] Logging resumed");
+    }
+    updateLEDs();
+    delay(500);
+  }
+
+  if(digitalRead(BTN_REMOUNT) == LOW) {
+    delay(500); //debounce
+    if (dataFile) dataFile.close();
+    Serial.println("[SD] Trying to reinitialize...");
+    sdReady = beginSD();
+    if (sdReady) Serial.println("[SD] Card reinitialized OK");
+    else         Serial.println("[SD] Init failed NOT OK");
+    updateLEDs();
+    delay(500);
+  }
+
+
   if (millis() - lastLogTime >= logInterval) {
     lastLogTime = millis();
-    logData();
+    if (sdReady && !loggingPaused) logData();
   }
 }
 
 void logData() {
+
+  if (!SD.begin(SD_CS)) {
+    sdReady = false;
+  } else {
+    sdReady = true;
+  }
+  updateLEDs();
 
   // Create a time structure
   struct tm timeinfo;
@@ -219,4 +260,23 @@ void generateFilename(struct tm timeinfo) {
           timeinfo.tm_year + 1900,
           timeinfo.tm_mon + 1,
           timeinfo.tm_mday);
+}
+
+bool beginSD() {
+  if (SD.begin(SD_CS)) {
+    return true;
+  }
+  return false;
+}
+
+bool ensureSDWritable(){
+  File f = SD.open(filename, FILE_APPEND);
+  if (f) { f.close(); return true; }
+  if (!beginSD()) return false;
+}
+
+void updateLEDs() {
+  digitalWrite(YELLOW, loggingPaused ? HIGH : LOW);
+  digitalWrite(GREEN,  (sdReady && !loggingPaused) ? HIGH : LOW);
+  digitalWrite(RED,    (!sdReady) ? HIGH : LOW);
 }
