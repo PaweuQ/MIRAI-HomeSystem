@@ -42,6 +42,10 @@ const unsigned long logInterval = 60000; // 1 minute in milliseconds
 // WiFi settings
 const char* ssid     = "xyz";
 const char* password = "xyz";
+#define LED_WIFI 33   // green LED
+unsigned long lastCheckTime = 0;
+const unsigned long wifiCheckInterval = 5000;
+
 
 // NTP server and time settings
 const char* ntpServer = "pool.ntp.org"; // NTP server address
@@ -73,6 +77,8 @@ void setup() {
   pinMode(YELLOW, OUTPUT);
   pinMode(BTN_REMOUNT, INPUT_PULLUP);
   pinMode(BTN_PAUSE, INPUT_PULLUP);
+  pinMode(LED_WIFI, OUTPUT);
+  digitalWrite(LED_WIFI, LOW);
 
   
   temp.begin();
@@ -87,6 +93,7 @@ void setup() {
     Serial.print(".");
   }
   Serial.println("\nWiFi connected.");
+  digitalWrite(LED_WIFI, HIGH);
 
   // Configure time via NTP
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
@@ -116,6 +123,11 @@ void setup() {
 
 
 void loop() {
+
+  if (millis() - lastCheckTime >= wifiCheckInterval){
+    checkWiFiConnection();
+  }
+    lastCheckTime = millis();
 
   if(digitalRead(BTN_PAUSE) == LOW){
     delay(500); //debounce
@@ -279,4 +291,36 @@ void updateLEDs() {
   digitalWrite(YELLOW, loggingPaused ? HIGH : LOW);
   digitalWrite(GREEN,  (sdReady && !loggingPaused) ? HIGH : LOW);
   digitalWrite(RED,    (!sdReady) ? HIGH : LOW);
+}
+
+// connecting to WiFi
+void connectToWiFi() 
+{
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED || millis() - lastCheckTime < wifiCheckInterval) 
+  {
+    Serial.println("Connecting to WiFi...");
+    delay(1000);
+  }
+  if (WiFi.status() == WL_CONNECTED){
+      Serial.println("Connection restored!");
+      digitalWrite(LED_WIFI, HIGH); 
+  } else {
+      Serial.println("Failed attempt! Trying again after 60 s");
+      digitalWrite(LED_WIFI, LOW); 
+  }
+
+}
+
+/// checking WiFi connection
+void checkWiFiConnection() 
+{
+  if (WiFi.status() != WL_CONNECTED) 
+  {
+    Serial.println("Connection lost!");
+    digitalWrite(LED_WIFI, LOW);
+    connectToWiFi(); 
+  } else {
+    digitalWrite(LED_WIFI, HIGH);
+  }
 }
