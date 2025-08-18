@@ -40,8 +40,8 @@ unsigned long lastLogTime = 0;
 const unsigned long logInterval = 60000; // 1 minute in milliseconds
 
 // WiFi settings
-const char* ssid     = "HUAWEI-B525-7D56";
-const char* password = "GFR6Q4A9N17";
+const char* ssid     = "xyz";
+const char* password = "xyz";
 
 // NTP server and time settings
 const char* ntpServer = "pool.ntp.org"; // NTP server address
