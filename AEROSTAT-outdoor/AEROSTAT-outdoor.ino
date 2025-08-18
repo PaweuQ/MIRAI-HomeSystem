@@ -15,6 +15,7 @@
 #include "DHT.h"
 #include <SPI.h>
 #include <SD.h>
+#include <secretsPB.h>
 
 // MicroSD card module settings
 #define SD_CS 5
@@ -40,8 +41,6 @@ unsigned long lastLogTime = 0;
 const unsigned long logInterval = 60000; // 1 minute in milliseconds
 
 // WiFi settings
-const char* ssid     = "xyz";
-const char* password = "xyz";
 #define LED_WIFI 33   // green LED
 unsigned long lastCheckTime = 0;
 const unsigned long wifiCheckInterval = 5000;
