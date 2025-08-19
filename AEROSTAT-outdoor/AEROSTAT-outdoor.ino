@@ -12,7 +12,7 @@
 #include <time.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include <DHT.h
+#include <DHT.h>
 #include <SPI.h>
 #include <SD.h>
 #include <secretsPB.h>
