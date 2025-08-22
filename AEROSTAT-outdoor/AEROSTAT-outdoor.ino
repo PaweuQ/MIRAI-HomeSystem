@@ -32,9 +32,16 @@ File dataFile;
 #define BTN_REMOUNT 26 //yellow
 #define BTN_PAUSE 21  //red
 
+int LastTime = 0;
+int Time = 0;
+bool flagBTN1 = false;
+bool flagBTN2 = false;
+
 // === Logging state ===
 bool loggingPaused = false;      // true = logging stopped
 bool sdReady       = false;      // true = SD initialized and ready
+
+
 
 // ==== Logging interval ====
 unsigned long lastLogTime = 0;
@@ -125,12 +132,22 @@ void loop() {
 
   if (millis() - lastCheckTime >= wifiCheckInterval){
     checkWiFiConnection();
-  }
     lastCheckTime = millis();
+  }
 
-  if(digitalRead(BTN_PAUSE) == LOW){
-    delay(500); //debounce
+  Time = millis();
+
+  if (Time - LastTime >= 5000 && (flagBTN1 == true || flagBTN2 == true)){
+    flagBTN1 = false;
+    flagBTN2 = false;
+    LastTime = Time; 
+  }
+    
+
+  if(digitalRead(BTN_PAUSE) == LOW && flagBTN1 == false){
+    delay(250); //debounce
     loggingPaused = !loggingPaused; //toggle state
+    flagBTN1 = true;
     if (loggingPaused){
       sdReady = false; 
       if (dataFile) dataFile.close();
@@ -140,18 +157,17 @@ void loop() {
       Serial.println("[SD] Logging resumed");
     }
     updateLEDs();
-    delay(500);
   }
 
-  if(digitalRead(BTN_REMOUNT) == LOW) {
-    delay(500); //debounce
+  if(digitalRead(BTN_REMOUNT) == LOW && flagBTN2 == false) {
+    delay(250); //debounce
     if (dataFile) dataFile.close();
     Serial.println("[SD] Trying to reinitialize...");
     sdReady = beginSD();
     if (sdReady) Serial.println("[SD] Card reinitialized OK");
     else         Serial.println("[SD] Init failed NOT OK");
     updateLEDs();
-    delay(500);
+    flagBTN2 = true;
   }
 
 
