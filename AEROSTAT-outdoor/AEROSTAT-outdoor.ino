@@ -178,12 +178,13 @@ void loop() {
 }
 
 void logData() {
-
+/*
   if (!SD.begin(SD_CS)) {
     sdReady = false;
   } else {
     sdReady = true;
   }
+*/
   updateLEDs();
 
   // Create a time structure
@@ -300,6 +301,7 @@ bool ensureSDWritable(){
   File f = SD.open(filename, FILE_APPEND);
   if (f) { f.close(); return true; }
   if (!beginSD()) return false;
+  return true;
 }
 
 void updateLEDs() {
