@@ -130,12 +130,12 @@ void setup() {
 
 void loop() {
 
-  if (millis() - lastCheckTime >= wifiCheckInterval){
-    checkWiFiConnection();
-    lastCheckTime = millis();
-  }
-
   Time = millis();
+
+  if (Time - lastCheckTime >= wifiCheckInterval){
+    checkWiFiConnection();
+    lastCheckTime = Time;
+  }
 
   if (Time - LastTime >= 5000 && (flagBTN1 == true || flagBTN2 == true)){
     flagBTN1 = false;
@@ -314,7 +314,7 @@ void updateLEDs() {
 void connectToWiFi() 
 {
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED || millis() - lastCheckTime < wifiCheckInterval) 
+  while (WiFi.status() != WL_CONNECTED && millis() - lastCheckTime < wifiCheckInterval) 
   {
     Serial.println("Connecting to WiFi...");
     delay(1000);
@@ -323,7 +323,7 @@ void connectToWiFi()
       Serial.println("Connection restored!");
       digitalWrite(LED_WIFI, HIGH); 
   } else {
-      Serial.println("Failed attempt! Trying again after 60 s");
+      Serial.println("Failed attempt! Trying again after 5 s");
       digitalWrite(LED_WIFI, LOW); 
   }
 
