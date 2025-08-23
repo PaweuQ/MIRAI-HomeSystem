@@ -341,3 +341,13 @@ void checkWiFiConnection()
     digitalWrite(LED_WIFI, HIGH);
   }
 }
+
+struct tm getTimeInfo() {
+  struct tm t;
+
+  if (!getLocalTime(&t)) {
+    Serial.println("Failed to get time");
+  }
+
+  return t;
+}
